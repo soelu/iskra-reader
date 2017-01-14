@@ -15,7 +15,7 @@ var port = new serialport('/dev/ttyUSB0', {
 
 port.on('open', function() {
 	console.log('Port open');
-	port.write('/?!\r\n');
+	init();
 });
 
 port.on('data', function(data) {
@@ -31,3 +31,7 @@ port.on('data', function(data) {
 	});
 });
 
+function init() {
+	port.write('/?!\r\n');
+	setInterval(port.write('/?!\r\n'), 5*60*1000);
+}
