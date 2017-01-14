@@ -18,14 +18,16 @@ port.on('open', function() {
 	init();
 });
 
-port.on('data', function(data) {
-	console.log('Line from file:', data);
-  var d = data;
-	if (d.lastIndexOf('/ISk5MT174', 0) === 0) {
-		d = '\n' + new Date().getTime() + ';' + d;
+port.on('data', function(line) {
+	var d = '';
+	if (line.lastIndexOf('/ISk5MT174') >= 0) {
+		d = '\n' + new Date().getTime() + ';';
 	} else {
-		d = ';' + d;
+		if (line.lastIndexOf('1-0:1.8.0*255') >= 0) {
+			d = line.match(/\(([^)]+)\)/)[1];
+		}
 	}
+	console.log(d);
 	fs.appendFile('data.csv', d, function (err) {
 	  	if (err) return console.log(err);
 	});
