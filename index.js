@@ -32,6 +32,10 @@ port.on('data', function(data) {
 });
 
 function init() {
+	getData();
+	setInterval(getData, 5*60*1000);
+}
+
+function getData() {
 	port.write('/?!\r\n');
-	setInterval(port.write('/?!\r\n'), 5*60*1000);
 }
