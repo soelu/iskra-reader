@@ -4,6 +4,7 @@ var parsers = serialport.parsers;
 const fs = require('fs');
 const request = require('request');
 const config =  require('./config.json');
+var dataBuffer = JSON.parse(fs.readFileSync('./' + config.bufferFileName));
 
 var port = new serialport('/dev/ttyUSB0', {
 	baudRate: 300,
@@ -37,6 +38,7 @@ function init() {
 	getData();
 	setInterval(getData, 5*60*1000);
 	setInterval(resend, 30*60*1000);
+	setInterval(writeOutBuffer, 15*60*1000);
 }
 
 function getData() {
@@ -53,9 +55,7 @@ function sendToInflux(data, doBuffer, callback) {
 			console.warn('Error writing data to influxdb!');
 			if (doBuffer) {
 				console.warn('Buffering data...');
-				fs.appendFile(config.bufferFileName, data + '\n', function(err) {
-					if (err) return console.log(err);
-				});	
+				dataBuffer.push(data);	
 			}
 			if (callback) callback("Error");
 		} else {
@@ -68,28 +68,25 @@ function sendToInflux(data, doBuffer, callback) {
 
 function resend() {
 	console.log('Resending failed data from buffer.');
-	fs.readFile(config.bufferFileName, 'utf8', function(err, data) {
-	    if (err) {
-	        console.log('Error reading bufferfile', config.bufferFileName);
-	    } else {
-	    	var bufferFileLines = data.split('\n');
-	    	var newBuffer = [];
-	    	if (bufferFileLines.length - 1) {
-	    		console.log('Retrying', bufferFileLines.length - 1, 'data entries.');
-	    	} else {
-	    		console.log('Nothing to send.');
-	    		return;
-	    	}
-	    	for (var i = bufferFileLines.length - 1; i >= 0; i--) {
-	    		var bufferLine = bufferFileLines[i];
-	    		sendToInflux(bufferLine, false, function(err) {
-	    			if (err) {
-	    				console.log('resend failed');
-	    				newBuffer.push(bufferLine);
-	    			}
-	    		}); 
-	    	}
-	    	fs.writeFile(config.bufferFileName, newBuffer.join('\n'));	
-	    }
-	});
+	console.log('Retrying', dataBuffer.length, 'data entries.');
+	for (var i = dataBuffer.length - 1; i >= 0; i--) {
+		var bufferLine = dataBuffer[i];
+		sendToInflux(bufferLine, false, function(err) {
+			if (err) {
+				console.log('resend failed');
+			} else {
+				dataBuffer.splice(dataBuffer.indexOf(bufferLine), 1);		
+			}	
+		}); 
+			
+	}
 };
+
+function writeOutBuffer() {
+	console.log('writing out');
+	fs.writeFile(config.bufferFileName, JSON.stringify(dataBuffer), function(err) {
+		if (err) {
+    		console.log(err);
+    	}
+	});
+}
