@@ -32,11 +32,14 @@ port.on('data', function(line) {
 
 		sendToInflux(data, true);
 	}
+	if (line.lastIndexOf('!') == 0) {
+		setTimeout(getData, 10000);
+	}
 });
 
 function init() {
 	getData();
-	setInterval(getData, 5*60*1000);
+	// setInterval(getData, 5*60*1000);
 	setInterval(resend, 30*60*1000);
 	setInterval(writeOutBuffer, 15*60*1000);
 }
