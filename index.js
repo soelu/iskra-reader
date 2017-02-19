@@ -5,6 +5,7 @@ const fs = require('fs');
 const request = require('request');
 const config =  require('./config.json');
 var dataBuffer = JSON.parse(fs.readFileSync('./' + config.bufferFileName));
+var lastDataTime = 0;
 
 var port = new serialport('/dev/ttyUSB0', {
 	baudRate: 300,
@@ -22,6 +23,7 @@ port.on('open', function() {
 port.on('data', function(line) {
 	if (line.lastIndexOf('1-0:1.8.0*255') >= 0) {
 		var timestamp = new Date().getTime();
+		lastDataTime = timestamp;
 		var energy = line.match(/\(([^)]+)\*kWh\)/)[1];
 		console.log(timestamp, energy);
 		fs.appendFile('data.csv', timestamp+';'+energy+'\n', function (err) {
@@ -33,15 +35,24 @@ port.on('data', function(line) {
 		sendToInflux(data, true);
 	}
 	if (line.lastIndexOf('!') == 0) {
+		console.log('got termitating string. getting next data in 10s');
 		setTimeout(getData, 10000);
 	}
 });
 
 function init() {
 	getData();
-	// setInterval(getData, 5*60*1000);
+	setInterval(getDataSafety, 5*60*1000);
 	setInterval(resend, 30*60*1000);
 	setInterval(writeOutBuffer, 15*60*1000);
+}
+
+function getDataSafety() {
+	var now = new Date().getTime();
+	if (lastDataTime + 10*60*1000 <= now) {
+		console.warn('lastDataTime to old. Triggering new data.', lastDataTime);
+		getData();
+	}
 }
 
 function getData() {
