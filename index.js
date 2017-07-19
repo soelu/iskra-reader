@@ -63,13 +63,13 @@ function sendToInflux(data, doBuffer, callback) {
 	request.post({
 		headers: {'content-type' : 'text/plain'},
 		url:     config.influxdb.writeUrl,
-		body:    data }, 
+		body:    data },
 		function(error,response,body) {
 		if (error || response.statusCode >= 400) {
 			console.warn('Error writing data to influxdb!');
 			if (doBuffer) {
 				console.warn('Buffering data...');
-				dataBuffer.push(data);	
+				dataBuffer.push(data);
 			}
 			if (callback) callback("Error");
 		} else {
@@ -89,10 +89,10 @@ function resend() {
 			if (err) {
 				console.log('resend failed');
 			} else {
-				dataBuffer.splice(dataBuffer.indexOf(bufferLine), 1);		
-			}	
-		}); 
-			
+				dataBuffer.splice(dataBuffer.indexOf(bufferLine), 1);
+			}
+		});
+
 	}
 };
 
