@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -22,7 +22,10 @@
   },
   "homepage": "https://github.com/soelu/iskra-reader#readme",
   "dependencies": {
-    "request": "^2.79.0",
-    "serialport": "^4.0.7"
+    "request": "^2.88.0",
+    "serialport": "^8.0.5"
+  },
+  "devDependencies": {
+    "mocha": "^6.2.2"
   }
 }

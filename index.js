@@ -1,19 +1,25 @@
 'use strict';
-var serialport = require('serialport');
-var parsers = serialport.parsers;
+const SerialPort = require('serialport');
+const Readline = require('@serialport/parser-readline');
 const fs = require('fs');
 const request = require('request');
 const config =  require('./config.json');
 var dataBuffer = JSON.parse(fs.readFileSync('./' + config.bufferFileName));
 var lastDataTime = 0;
 
-var port = new serialport('/dev/ttyUSB0', {
+const port = new SerialPort('/dev/ttyUSB0', {
 	baudRate: 300,
 	dataBits: 7,
 	stopBits: 1,
 	parity: 'even',
-	parser: parsers.readline('\r\n')
 });
+
+const parser = port.pipe(new Readline({ delimiter: '\r\n' }));
+
+// Open errors will be emitted as an error event
+port.on('error', function(err) {
+  console.log('Error: ', err.message)
+})
 
 port.on('open', function() {
 	console.log('Port open');
