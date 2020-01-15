@@ -26,7 +26,7 @@ port.on('open', function() {
 	init();
 });
 
-port.on('data', function(line) {
+parser.on('data', function(line) {
 	if (line.lastIndexOf('1-0:1.8.0*255') >= 0) {
 		var timestamp = new Date().getTime();
 		lastDataTime = timestamp;
