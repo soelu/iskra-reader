@@ -1,6 +1,6 @@
 {
 	"influxdb" : {
-		"writeUrl": "http://localhost:8086/write?db=energydb", 
+		"writeUrl": "http://localhost:8086/write?db=energydb&u=Username&p=Password", 
 		"measurement" : "myHome"
 	},
 	"bufferFileName": "buffer.data"
